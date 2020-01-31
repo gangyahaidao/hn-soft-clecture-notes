@@ -383,8 +383,4 @@ public static long factorial(int n) {
 
 **（3）函数调用进阶：函数调用的基本原理**
 
-参看链接：
-
-https://pan.iflytek.com:443/#/link/433060049C66AABEB9A15AE979A93B3A
-访问密码：CYzr
-有效期限截止：2020-3-1
+具体参看文档：
