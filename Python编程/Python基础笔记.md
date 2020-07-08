@@ -1,3 +1,7 @@
+
+
+
+
 ## Python编程学习笔记
 
 > 创建：讯飞人工智能学院
@@ -22,11 +26,13 @@
 3. 程序注释
 
    1. 使用#号注释单行：`# this is our first programe!`
-   2. 使用`'''注释多行'''`或者`“”“注释多行”“”`
+   2. 使用`'''注释多行'''`或者`"""注释多行"""`
 
 4. 设置解释器为utf-8编码。在文件头部添加一行：`# -*-coding:UTF-8 -*-`,Python3之前的版本需要设置，Python3之后默认就是utf-8编码，不会有中文乱码问题，可以不用设置
 
-5. Python标识符命名规则：字母、数字、下划线，且不能数字开头，python语言是大小写敏感的；其中以下划线开头的标识符有特殊含义，以单下划线开头的代表不能直接访问的类属性，需要类提供的接口进行访问；以双下划线开头的代表类的私有成员；以双下划线开头和结尾的代表Python里特殊方法专用的标识，如`__init__()`表示类的构造函数
+5. Python标识符命名规则：字母、数字、下划线，且不能数字开头，python语言是大小写敏感的；其中以下划线开头的标识符有特殊含义，以单下划线开头的代表不能直接访问的类属性，需要类提供的接口进行访问；以双下划线开头的代表类的私有成员；以双下划线开头和结尾的代表Python里特殊方法专用的标识，如`__init__()`表示类的构造函数;
+
+   ​	有效的Python标识符是任意长度的非空字符序列，其中包括一个引导字符以及0个或者多个后续字符，其中只要是Unicode编码的字符否可以充当引导符，所以Python中是可以起中文的标识符的；但是不能与关键字同名；
 
 6. Python3 关键字
 
@@ -159,49 +165,65 @@
 
       2. 用来进行数运算的算数运算符
 
-         | 运算符 |  功能描述  |
-         | :----: | :--------: |
-         |   +    |     加     |
-         |   -    |     减     |
-         |   *    |     乘     |
-         |   /    |   **除**   |
-         |   %    |    取模    |
-         |   **   |   幂运算   |
-         |   //   | **取整除** |
+         | 运算符 |        功能描述        |
+         | :----: | :--------------------: |
+         |   +    |           加           |
+         |   -    |           减           |
+         |   *    |           乘           |
+         |   /    |         **除**         |
+         |   %    |          取模          |
+         |   **   |         幂运算         |
+         |   //   | **取整除**(剥离操作符) |
 
       3. 自行练习相应的整数及浮点数的例子
 
-      4. 复数：由实部和虚部组成，形式为：a+bj
+         1. 对于Python有一点需要注意，赋值操作实际上是先创建一个对象来存储结果，然后再将对象的引用赋值给变量，而不是像其他编程语言一样直接修改变量指向的存储空间中的值：
 
+         <img src="C:\Users\My\AppData\Roaming\Typora\typora-user-images\image-20200424190655555.png" alt="image-20200424190655555" style="zoom:80%;" />
+   
+         如下表示对象与引用的关系图：
+   
+      <img src="C:\Users\My\AppData\Roaming\Typora\typora-user-images\image-20200424190910701.png" alt="image-20200424190910701" style="zoom:80%;" />
+   
+      另外，操作符`+`与`+=`对字符串作用不一样，如下：
+   
+      <img src="C:\Users\My\AppData\Roaming\Typora\typora-user-images\image-20200424191202301.png" alt="image-20200424191202301" style="zoom:80%;" />
+   
+         > 也就是说使用+=时会创建一个新字符串，并且变量重新绑定新字符串的引用;
+   
+      4. 复数：由实部和虚部组成，形式为：a+bj
+   
          ```python
          >>> (1-2j)*(2-3j)
          (-4-7j)
          ```
-
-         > Why？我已忘记复数乘法规则，请自行补充
-
+      ```
+      
+      > Why？我已忘记复数乘法规则，请自行补充
+      
       5. 布尔运算：在Python中True和False来表示，注意首字母必须大写，否则报错，一般与and、or、not一起使用
-
+      
          ```python
          >>> True and True
          True
-         >>> True or False
+      >>> True or False
          True
-         >>> not False
+      >>> not False
          True
-         ```
-
+      ```
+   
       6. 二进制运算
-
+   
          ```python
          >>> 0b1110
          14
-         >>> bin(14)
-         '0b1110'
          ```
-
-         二进制位运算符：
-
+      >>> bin(14)
+         '0b1110'
+      ```
+      
+      二进制位运算符：
+      
          | 运算符 | 运算规则 |
          | :----: | :------: |
          |   &    |  与运算  |
@@ -209,33 +231,42 @@
          |   ^    | 按位异或 |
          |   ~    | 按位反转 |
          |   <<   |  左移动  |
-         |   >>   |  右移动  |
-
-         > 可以使用前面介绍的二进制运算来练习这些运算符
-
-      7. 比较运算符
-
-         | 比较运算符 |   运算规则   |
-         | :--------: | :----------: |
-         |     ==     | 比较是否相等 |
-         |     !=     | 比较是否不等 |
-         |     >      |     大于     |
-         |     <      |     小于     |
-         |     >=     |   大于等于   |
-         |     <=     |   小于等于   |
-
-         比较运算符的优先级低于算数运算符、位运算符，但是高于逻辑运算符：`5+1>5 and True  #先计算5+1=6，再计算6>5得True，再计算True and True运算`
-
-      8. 赋值运算符：
-
+      |   >>   |  右移动  |
+      
+      > 可以使用前面介绍的二进制运算来练习这些运算符
+      ```
+   
+   7. 赋值运算符：
+   
          ```python
          +、+=、-=、*=、/=、%=、**=、//=、<<=、>>=、&=、|=、^=
-         ```
-
+      ```
+   
+   8. 逻辑操作符
+   
+      1. 身份操作符：`is`、`is not`，用于查看两个对象引用是否指向同一个对象；或者用于查看某个对象是否为None
+   
+         2. 比较运算符
+   
+            | 比较运算符 |   运算规则   |
+            | :--------: | :----------: |
+            |     ==     | 比较是否相等 |
+            |     !=     | 比较是否不等 |
+            |     >      |     大于     |
+            |     <      |     小于     |
+            |     >=     |   大于等于   |
+            |     <=     |   小于等于   |
+   
+            比较运算符的优先级低于算数运算符、位运算符，但是高于逻辑运算符：`5+1>5 and True  #先计算5+1=6，再计算6>5得True，再计算True and True运算`
+   
+         3. 成员操作符：`in`、`not in `，用来测试成员关系，测试数据是否属于字符串、列表或元组
+   
+         4. 逻辑运算符：`and`、`or`、`not`，其中and与or使用short-circuit逻辑，返回值为决定结果的操作数，而不是返回默认的布尔类型，这一点与其他编程语言不同，如：`2 and 5`返回值决定此结果的5，而不是True，not运算符总是返回布尔结果；
+   
       ---
-
+   
    4. 数据类型转换
-
+   
       ```python
       >>> int(3.2)
       3
@@ -292,9 +323,24 @@
       	子代码模块
       elif boolean_value2:
       	子代码模块2
+      .......
       else:
       	子代码模块3
       ```
+      
+   4. 格式四：将一条if-else缩减为单一的条件表达式：
+
+      ```python
+      expression if boolean_expresseion else expression2
+      例如：
+      offset = 20
+      if not sys.platform.startwith("win")
+      	offset = 10
+      简化之后是：
+      offset = 20 if sys.platform.startwith("win") else 10
+      ```
+
+      
 
 2. while循环
 
@@ -304,6 +350,19 @@
       while boolean_value1:
       	子代码模块1
       ```
+      
+   2. while-else结构
+
+      ```python
+      while boolean_value2:
+      	子代码模块1
+      else:
+      	子代码模块2
+      ```
+
+      >  注：else分支用法很容易被迷惑，只要循环是正常终止的，else分支代码就会被执行；如果是由于break语句、或者其他返回语句、或者发生异常而跳出循环，else分支的代码则不会执行；
+      >
+      >  else的这个分支特点对while循环、for-in循环以及try-except都适用；
 
 3. for语句基本语法
 
@@ -313,7 +372,7 @@
       for <variable> in <sequence>:
       	子代码模块1
       else:
-      	子代码模块2 #为for循环语句结束时，再执行此对应的代码模块2
+      	子代码模块2 #为for循环语句正常结束时，再执行此对应的代码模块2
       ```
 
       sequence可以为数字序列，字符串，列表，元组，字典等
@@ -726,8 +785,10 @@
    2. 带返回参数的例子
 
    ```python
-   # 带返回值的求因数函数案例
+   #!/usr/bin/env python3    #告诉Linux/OS X系统，这是一个Python可执行程序，Windows系统会忽略这个注释
+   # -*- coding: utf-8 -*-   #告诉Python解释器，按照UTF-8编码读取源代码，否则，你在源代码中写的中文输出可能会有乱码
    
+   # 带返回值的求因数函数案例
    def find_factor(nums):
        i = 1
        str1 = ''
@@ -1190,10 +1251,34 @@
 9. 当模块文件多了之后，如何创建包来进行管理？
 
    1. 建立顶级目录，如package1，然后在此目录放置一个`__init__.py`的空文件，主要是说明该文件的目录是一个包目录；该顶级包目录的名称就是包的名称
-   2. 把模块文件放到包中，也可以在包中建立子文件夹如Cat，存放对应的模块文件Cat_Main.py模块文件，则导入包模块方式为：`import package1.Cat.Cat_Main`
-   3. 可以通过设置sys.path临时增加搜索路径，或存放于Python默认搜索路径下
-   4. 第三方开发者提供的软件包多是以包的形式提供的，如：https://pypi.python.org/pypi
-   5. 安装Python目录下的lib文件夹中包含相关标准库的源码， 可以参考世界级的高手都是怎么写程序的
+
+   2. 把模块文件放到包中，也可以在包中建立子文件夹如Cat，存放对应的模块文件Cat_Main.py模块文件，则导入包模块方式为：`import package1.Cat.Cat_Main as CatMain`；
+
+   3. 上面的方法一次只能导入一个模块，如果想同时导入包中所有的模块，则需要编辑`__init__.py`文件，在其中加入如下一句：
+
+      ```python
+      __all__ = ["Bmp", "Jpeg", "Png", "Tiff"]
+      ```
+
+      然后在使用导入语句是：`from package1 import *`即可将包中的模块全部导入；
+
+   4. 如果包中存在子包，则结构一样，导入时使用点号`.`号进行连接，如：`import Graphics.Vector.SVG as SVG`;
+
+   5. 写完一个模块之后，如果想测试一下代码功能，则可以在模块底部编写如下代码进行简单的使用方法演示及测试：
+
+      ```python
+      if __name__ == "__main__":
+      	import doctest
+      	doctest.test_method()
+      ```
+
+      > 注：上面代码不影响模块被加载的原因是，模块被其他模块导入的时候Python将为此模块创建一个名为`__name__`的变量，并将其值设置为模块的名字，所以被导入的时候上面代码的if条件并不满足，不会影响模块的导入；但是在单独执行此模块.py文件时，Python会将`__name__`的值设置成`__main__`，此时if条件满足，可以单独执行测试；
+
+   6. 可以通过设置sys.path临时增加搜索路径，或存放于Python默认搜索路径下；
+
+   7. 第三方开发者提供的软件包多是以包的形式提供的，如：https://pypi.python.org/pypi
+
+   8. 安装Python目录下的lib文件夹中包含相关标准库的源码， 可以参考世界级的高手都是怎么写程序的
 
 ---
 
@@ -1226,15 +1311,18 @@
    ```python
    try:
    	代码模块1
-   except:
+   except expression_type as err:
    	代码模块2
+   else:
+       代码块3   #如果try块代码正常执行完毕，则会执行else代码块
    finally:
-   	代码模块3
+   	代码模块4  # finally代码块最后总是会被执行，不管是否有异常发生
    如：
    import sys
    try:
        1/0
-   except:
+   except (IOError, OSError) as err:
+       print(err) # err变量包含详细的错误信息
        print('除数不能为0')
        sys.exit()   # 此处虽然强制退出，但是finally子句还是会执行
    finally:
@@ -1246,7 +1334,8 @@
    ```python
    try:
    	i += 1
-   except NameError:
+   except NameError as err:
+       print(err)
    	print('NameError')
    #=========================================
    try:
@@ -1261,7 +1350,138 @@
 
 5. 抛出异常：使用raise关键字，不带参数的触发`raise`或者 `raise TypeError('i类型错误')`
 
+6. 自定义简单的异常
+
+   1. 格式：`class ExceptionnName(baseException): pass`
+   2. 例如：
+
+   ```python
+   class FoundException(Exception): pass
+   
+   try:
+   	for row, record in enumerate(table):
+   		for column, field in enumerate(record):
+   			for index, item in enumetate(field):
+   				if item == target:
+   					raise FoundException()
+   except FoundException:
+   	print("found in ({1}, {1}, {2})".format(row, column, index))
+   else:
+   	print("not found")
+   ```
+
+   
+
 ---
 
+### 第十章 文件处理
 
+#### 1. 文本文件
 
+1. 文件操作基本规则
+
+   1. 文件名称一般以英文、数字、汉字开头易于阅读
+
+   2. 转移字符可以使用反斜杠，或者r或R添加原始符号限制
+
+   3. 指定的文件路径必须存在，否则报错
+
+      ```python
+      newfile = './t1.txt'
+      
+      b_new_file = open(newfile, 'w')
+      b_new_file.close();
+      print('创建文件成功%s' % newfile)
+      ```
+
+      打开模式：
+
+      | mode参数值 | 功能描述                                       |
+      | ---------- | ---------------------------------------------- |
+      | r          | 以只读方式打开已经存在的文件                   |
+      | w          | 以可写方式打开，若不存在则建立新文件           |
+      | x          | 以可写方式建立一个新文件                       |
+      | a          | 追加方式打开一个文件，若文件不存在则建立新文件 |
+      | b          | 二进制模式                                     |
+      | t          | 文本模式                                       |
+      | +          | 以读写方式打开一个文件                         |
+      | U          | 通用换行符模式（不建议使用）                   |
+
+      *模式可以进行组合*
+
+   4. 写入方法：f.write(str)
+
+   5. 读取方法：f.read([size])，size是可选的，用于指定读取的字节数，如果省略则尽可能读取多的内容，可以连续调用read方法来读取
+
+   6. 行读取：f.readline([size])，s表示可选参数读取字节大小
+
+      1. f.readlines()可以列表结果形式一次读取多行
+
+   7. 在指定位置读取
+
+      1. f.tell()方法返回当前文件操作指示器所在的字节偏移位置
+      2. f.seek(offset [, whence])，offset参数设置位置的偏移量，whence确定文件起始位置：SEEK_SET代表从文件开头读取；SEEK_CUR表示当前位置；SEEK_END表示文件尾
+
+   8. 文件操作异常处理
+
+      ```python
+      f_n = r'd:\t3.txt'
+      flag = False
+      
+      try:
+          f = open(f_n, 'r')
+          print(f.read())
+          flag = True
+      except:
+          print('打开文件%s出错，请检查' % f_n)
+      finally:
+          if flag:
+              f.close()
+              print('文件做关闭处理')
+          else:
+              print('程序关闭')
+      ```
+
+   9. 文件与路径相关的：在os模块中通过path对象来实现对路径的各种操作
+
+      1. 获取程序运行的当前路：`cur_path =os.path.abspath(os.path.curdir)`
+      2. 判断指定路径下是否存在文件：`os.path.exists(r'd:\t1.txt')`或者 `os.path.isfile(r'd:\t1.txt')`
+      3. 判断指定的路径是否存在：`os.path.isdir(path)`或者 `os.path.exists(path)`
+      4. 建立文件夹（子路径）: `os.makedirs(path)`，建立失败则抛出OSError错误信息
+
+---
+
+#### 2. JSON格式文件
+
+1. JSON格式基本知识
+
+2. JSON数据类型与Python数据之间相互转化规则：
+
+   | 从Python开始序列化         | 从JSON反序列化 |            |
+   | -------------------------- | -------------- | ---------- |
+   | Python类型                 | JSON类型       | Python类型 |
+   | dict                       | object         | dict       |
+   | list、tuple                | array          | list       |
+   | str                        | string         | str        |
+   | int、float及派生的枚举类型 | number(int)    | int        |
+   | true                       | true           | true       |
+   | false                      | false          | false      |
+   | none                       | null           | none       |
+
+   示例：使用Python自带的json模块
+
+   ```python
+   import json
+   p_d = {'Tom':29, 'Jack':20, 'Jim':12}
+   p_to_j = json.dumps(p_d) # 转换成JSON类型
+   j_to_p = json.loads(p_to_j)  # 把JSON反序列化
+   ```
+
+3. 读写JSON文件：Python专门为读写文件提供了dump()和load()方法
+
+---
+
+#### 3. XML格式文件
+
+1. XML基本知识
+2. xml模块：SAX和DOM

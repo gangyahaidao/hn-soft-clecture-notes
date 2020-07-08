@@ -1,0 +1,869 @@
+**************************************************JAVA基础部分****************************************
+参考《Java核心技术第十版》
+1.最简Java主程序
+    public class FirstSample{
+        public static void main(String[] args) {
+            System.out.println("This is the first Java programe");
+        }        
+    }
+2.JavaSE1.4及以后的版本中，强制main方法是public类型的
+3.数据类型
+    1.基本数据类型
+        byte    1字节   -128~127
+        short   2字节   
+        int     4字节
+        long    8字节
+        java中没有无符号的整型
+        float   4字节   有效位数为6～7位
+        double  8字节   有效位数为15位
+        没有后缀F的浮点数默认为double类型，一般常用double类型
+        浮点数常用的三个常量：Double.POSITIVE_INFINITY正无穷大  Double.NEGATIVE_INFINITY    Double.NaN表示不是一个数字
+        注意：浮点数不适合用在对舍入误差敏感的金融领域，如打印2.0-1.1 = 0.8999999999999999，这种舍入误差的原因是浮点数值采用二进数值表示，而在二进数值系统中无法精确表示分数1/10，
+            如果想在计算中不会有任何舍入误差，应该使用BigDecimal类
+    2.大数值类型-BigInteger和BigDecimal（可以处理包含任意长度数字序列的数值）
+        1.使用静态的valueOf()可以将普通数值转换成大数值
+            BigInteger big = BigInteger.valueOf(100);
+        2.运算需要使用专用的方法
+            add()、subtract()、multiply()、divide()、mod()等
+4.在程序中建议不使用char类型，除非确实需要处理UTF-16代码单元
+5.在java中if(x = 0) 不能编译通过，原因是x=0不能转换成布尔值
+6.变量名必须是一个以字母开头并由字母和数字构成的序列，Java中的字母范围更大，包括'A'~'Z','a'~'z','_','$'或者在某种语言中表示字母的任何Unicode字符
+7.尽管$是一个合法的Java字符，但不要在代码中使用这个字符，它只用在编译器和其他工具生成的名字中
+8.在java中，利用关键字final指示常量
+9.三目运算符：x < y ? x : y
+10.位运算符：&("and") |("or") ^("xor") ~("not")
+11.右移运算符：>>>运算符会用0填充高位，而>>和<<会使用符号位填充高位，不存在<<<运算符
+12.枚举类型
+    enum Size {SMALL, MEDIAM, LARGE, EXTRA_LARGE}
+    声明枚举类型变量：Size s = Size.MEDIAM;
+    1.可以在枚举类中添加一些构造器、方法和域
+        public enum size{
+            SMALL("S"), MEDIUM("M"), LARGE("L"), EXTRA_LARGE("XL");
+            private String abbreviation;
+            private Size(String abbreviation) {this.abbreviation = abbreviation;}
+        }
+    2.所有的枚举类都是Enum的子类，其中继承的toString()方法会返回枚举常量名，如Size.SMALL.toString()返回”SMALL“
+    3.toString()的逆方法是静态方法valueOf()，如
+        Size s = Enum.valueOf(Size.class, "SMALL"); // 将s设置成Size.SMALL
+    4.每一个枚举类型都有一个静态的values()方法，它将返回一个包含所有枚举值的数组
+13.字符串
+    1.如果需要把多个字符串放在一起，用一个定界符分隔，可以使用String.join()方法：
+        String all = String.join(" / ", "S", "M", "L", "XL"); // "S / M / L / XL"
+    2.C++中的string字符串是可以修改的，而java的字符串是共享不能修改的
+    3.字符串比较使用equals()或者compareTo()方法，不要使用==进行比较，因为字符串常量是共享的，但是+或者substring()等操作产生的结果并不是共享的
+    4.空串与Null串
+        空串是长度为0字符串，可以用如下代码检查：
+            if(str.length() == 0) ...
+            或者if(str.equals("")) ...
+        检查某个字符串是否为Null：
+            if(str == null) ...
+        检查某个字符串既不是null也不是空串：
+            if(str != null && str.length() != 0) ....
+    5.码点与代码单元
+        码点是指与一个编码表中某个字符对应的代码值，在Unicode中码点采用十六进制书写
+        char数据类型是一个采用UTF-16编码表示Unicode码点的代码单元，大多数常用的Unicode字符使用一个代码单元就可以表示，而辅助字符需要使用一对代码单元表示
+        length()方法将返回给定字符串所需要的代码单元数量
+    6.一些API需要CharSequence类型的参数，调用时可以传入String类型的实参
+14.读取输入
+    1.通过控制台进行输入
+        首先需要构造一个Scanner对象，并与标准输入流System.in进行关联
+            Scanner in = new Scanner(System.in);
+            System.out.println("How old are you?");
+            int age = in.nextInt();
+    2.从控制台读取密码：
+        Console cons = System.console();
+        String username = cons.readLine("User name:");
+        char[] passwd = cons.readPassword("Password:");为了安全起见，在对密码值进行处理之后马上用一个填充值覆盖数组元素
+    3.格式化输出
+        1.System.out.println("%8.2f", x);
+        2.可以使用String.format()来创建一个格式化的字符串：
+            String message = String.format("Hello, %s is %d", "dddd", 100);
+        3.格式化打印日期和时间
+            System.out.println("%tc", new Date());
+    4.文件输入与输出
+        1.输入：
+            Scanner in = new Scanner(Paths.get("myfile.txt"), "UTF-8");
+        2.输出：
+            PrintWriter out = new PrintWriter("myfile.txt", "UTF-8"); 如果文件不存在则创建，之后就可以使用print()等方法写入数据到文件
+15.条件语句
+    1.switch结构的case标签类型：
+        1.类型为char, byte, short, int的常量表达式
+        2.枚举常量
+        3.从JAVAEE7开始，增加了字符串常量
+    2.使用枚举进行switch-case判断，不必指明枚举名
+        Size sz = ...
+        switch(sz) {
+            case SMALL: // 不需要使用Size.SMALL
+                ...
+                break;
+        }
+    3.带有标签的break语句：
+        read_data:
+        {
+            while(...){
+                ...
+                for(...) {
+                    ...
+                    if(...) {
+                        break read_data; // 将跳转到带有标签语句块的末尾
+                    }
+                }
+            }
+        }
+    4.for each循环
+        for(variable : collection) statement;  // collection这个集合表达式必须是一个数组或者是一个实现了Iterable接口的类对象
+    5.java中允许创建一个长度为0的数组：new elementType[0]
+    6.数组拷贝
+        1.将一个数组变量赋值给另一个数组变量，则两个变量将引用同一个数组
+        2.可以使用Arrays.copyOf()方法进行数组的复制
+        3.java数组没有指针运算，即不能通过数组加1得到下一个元素
+    7.数组
+        1.数组初始化
+            int[] smallPrime = {1, 2, 3, 4, 5, 6}; // 如果知道数组有哪些元素可以不调用new
+            smallPrime = new int[] {7, 8, 9, 10, 11}; // 使用此种形式可以在不创建变量的情况下重新初始化一个数组变量
+            smallPrime = new int[100]; // 初始化一定空间大小的数组
+        2.数组排序
+            可以使用Arrays.sort(result);
+        3.二维数组
+            1.循环遍历二维数组
+                for(double[] row : array) {
+                    for(double value : row) {
+                        ....
+                    }
+                }
+            2.快速打印一个二维数组元素
+                System.out.println(Arrays.deepToString(array));
+        4.创建不规则数组，如创建存储乘法口诀的数组
+            int[][] odds = new int[MAX+1][]; // 分配行数
+            for(int n = 0; n <= MAX; n++) {
+                odds[n] = new int[n+1];
+            }
+        5.数组转换成List
+            Integer[] a = {1, 2, 3, 4};
+            List<Integer> list = Arrays.asList(a);
+            for(Integer value : list) {
+                System.out.println(value);
+            }
+            或者转换成集合
+            String[] values = ...
+            HashSet<String> staff = new HashSet<>(Arrays.asList(values));
+        6.List转换成数组
+            List<String> list = new ArrayList();
+            list.add("aaa");
+            list.add("bbb");
+            String[] array = list.toArray(new String[list.size()]);
+16.类之间的关系
+    1.依赖("uses-a")，如Order类使用依赖于Account类
+    2.聚合("has-a")
+    3.继承("is-a")，另一种表述法是置换法则，表明程序中超类出现的任何地方都可以使用子类对象置换
+17.java中的日历
+    1.Date类用来表示时间点
+    2.表示日历使用LocalDate类
+    3.不推荐使用Date类中的getDay()、getMonth()、getYear()等方法
+18.方法的注释
+    1.@param用于描述参数
+    2.@return用于描述返回值
+    3.@throws表示此方法可能抛出的异常
+    通用注释
+        @author
+        @version
+        @since
+        @deprecated Use <code> setVisitable(true) </code> instead
+        @see引用
+19.类设计技巧
+    1.保证数据私有
+    2.要对数据进行初始化，最好不要依赖于系统的默认值
+    3.不要在类中过多的使用基本类型
+    4.不是所有的域都需要独立的域访问器和修改器
+    5.将职责过多的类进行分解
+    6.类名和方法名要能体现它们的职责
+    7.优先使用不可变的类，有助于多线程访问
+20.阻止继承或者覆盖，可以使用final修饰类和方法
+21.编写完美equals()的建议：
+    1.显示参数命名为otherObject，稍后需要将它转换成另一个叫other的变量（public boolean equals(Object otherObject)）
+    2.检测this与otherObject是否引用同一个对象
+        if(this == otherObject) return true; // 只是一个优化手段，是一种经常采用的方式，这种方式比域中所有值比较代价小很多
+    3.检测otherObject是否是null，如果为null，返回false
+        if(otherObject == null) return false;
+    4.比较this与otherObject是否属于同一个类
+        1.如果equals()语义在每个子类中有所改变，使用getClass()检测
+            if(this.getClass() != otherObject.getClass()) return false;
+        2.如果所有的子类拥有统一的语义，使用instanceof检测
+            if(!(otherObject instanceof ClassName)) return false;
+    5.将otherObject转换成相应的类类型变量
+        ClassName other = (ClassName)otherObject;
+    6.现在对所有需要比较的域进行比较，使用==比较基本类型域，使用equals()比较对象域，如果所有的域都相等则返回true，否则返回false
+        return field1 == other.field1
+                && Object.equals(field2, other.field2)
+                && ....
+    7.如果在子类中重新定义equals()，就要在其中包含调用super.equals(other)
+        public class Maneger extends Employee{
+            ....
+
+            public boolean equals(Object otherObject) {
+                if(!super.equals(otherObject)) return false;  // 用来检测this和otherObject对象超类中的域是否相等，之后再检测子类中的域是否相等
+            }
+        }
+    8.对于数组类型的域，可以使用静态的Arrays.equals()检测是否相等
+22.hashCode()方法编写，如果重新定义了equals()方法，就必须重新定义hashCode方法，以便可以将对象插入到散列表中
+    1.对域进行hash计算
+        public int hashCode() {
+            return 7*Object.hashCode(name)
+                + 11 * Double.hashCode(salery) // 这样可以避免创建一个Double对象
+                + 13 * Objects.hashCode(hireDay);
+        }
+    2.当需要对多个组合进行散列值进行计算时，可以调用Objects.hash进行计算，会对各个参数调用Objects.hashCode()，并组合这些散列值，上述写法可以简写为：
+        public int hashCode() {
+            return Objects.hash(name, salary, hireDay);
+        }
+23.自动装箱与基本类型，在相等性方面不同
+    Integer a = 100;
+    Integer b = 100;
+    if(a == b) ...  // 此时结果为true
+    原因：自动装箱规范要求boolean，byte，char <= 127和介于-128~127之间的short和int被包装到固定的对象中，所以上面结果为true
+24.可变参数类型
+    public static double max(double... values){
+        double largest = Double.NEGATIVE_INFINITY;
+        for(double v : values) {
+            if(v > largest) largest = v;
+        }
+        return largest;
+    }
+25.继承的设计技巧
+    1.将公共操作和域放在超类
+    2.不要使用受保护的域
+    3.使用继承实现"is-a"关系
+    4.除非所有继承的方法都有意义，否则不要使用继承
+    5.在覆盖方法时，不要改变预期的行为
+    6.使用多态，而非类型信息，即使用多态来代替类型判断来执行相应的逻辑
+    7.不要过多的使用反射，会导致在编译阶段难以发现错误，只有到运行时才能发现
+26.接口的默认方法
+    1.必须用default修饰符标记这样的方法
+        public interface Comparable<T> {
+            default int compareTo(T other) { return 0;}
+        }
+    2.接口默认方法中可以调用任何其他方法
+    3.给接口方法提供默认的实现，这样再实现接口方法时就可以选择性的实现方法
+        public interface MouseListener {
+            default void mouseClicked(MouseEvent event) {}
+            default void mousePressed(MouseEvent event) {}
+            default void mouseReleased(MouseEvent event) {}
+        }
+27.默认方法冲突问题
+    1.如果先在一个接口中将一个方法定义为默认方法，然后又在超类或者另一个接口中定义了同样的方法，解决冲突规则如下：
+        1.超类优先
+        2.实现的两个接口有相同的方法，必须手动覆盖这个方法来解决冲突
+            interface Named {
+                default String getName() {}
+            }
+            public Student implements Person, Named {
+                public String getName() {return Person.super.getName();}
+            }
+        3.另一种情况的冲突：一个类扩展了一个超类，同时实现了一个接口，并从超类和接口继承了相同的方法
+            class Student extends Person implements Named {...}
+            这里遵循"类优先"规则，只会考虑超类方法，接口的所有默认方法会被忽略
+28.Comparator接口
+    1.Array.sort()默认可以实现字符串按字典序排序的功能，如果要实现按长度排序如何做？
+        Class LengthComparator implements Comparator<String> {
+            public int compare(String first, String second) {
+                return first.length() - second.length();
+            }
+        }
+        调用：
+        String[] friends = {"Mike", "Paul", "Jam"};
+        Arrays.sort(friends, new LengthComparator());
+    2.Comparator接口包含方便的静态方法来创建比较器，这些方法可以用于lambda表达式或者方法引用
+        如：
+            Arrays.sort(people, Comparator.comparing(Person::getName); // Person对象数组，按照名字进行排序
+            Arrays.sort(people, Comparator.comparing(Person::getLastName).thenComparing(Person::getFirstName)); // 如果lastName相同则使用firstName进行比较
+            Arrays.sort(people, Comparator.comparing(Person::getName,
+                (s, t) -> Integer.compare(s.length(), t.length())));
+29.拷贝与克隆，Colneable接口
+    1.拷贝之后原变量和副本都是同一个对象的引用
+    2.克隆之后各自有自己不同的状态
+    3.浅拷贝和深拷贝
+        1.默认拷贝是浅拷贝，没有克隆对象中引用的其他对象
+        2.即使默认的浅拷贝实现能够满足要求，还是需要实现Cloneable接口，将clone重新定义为public，再 调用super.clone()
+            class Employee implements Cloneable { // 要注意实现Cloneable接口
+                public Employee clone() throws CloneNotSupportedException {
+                    return (Emplyee)super.clone(); // 此处作用是让clone()方法变成public方法
+                }
+            }
+        3.如果在一个对象上调用clone()，但这个对象的类并没有实现clone()接口，Object类的clone()方法就会抛出一个CloneNotSupportedException异常
+        4.一个深拷贝的例子
+            public Employee clone() throws CloneNotSupportedException {
+                Employee cloned = (Empoyee) super.clone(); // 先调用Object.clone()方法进行浅拷贝
+                cloned.hireDate = (Date) hireDay.clone(); // 调用clone()方法复制Date对象
+                return cloned;
+            }
+        5.所有的数组类型都有一个public的clone方法，而不是protected，所以用clone()方法建立一个新数组会包含原数组的所有拷贝
+        6.另一种克隆对象的机制，使用Java对象的串行化机制，很容易实现且安全，但是效率不高
+        7.克隆在处理String对象域的时候，也是进行了浅拷贝，但是String的不可修改性会表现出修改克隆的对象与原对象不想关的特性，可以简单当成基本数据类型来对待，但是在进行equals()时要额外处理
+30.lambda表达式
+    1.单语句形式：
+        (String first, String second) -> first.length() - second.length();
+    2.多语句形式：
+        (String first, String second) -> {
+            if(first.length() < second.length()) return -1;
+            else if(first.length() > second.length()) return 1;
+            else return 0;
+        }
+    3.无参数形式
+        () -> {for(int i = 0; i < 100; i++) System.out.println("i = " + i);}
+    4.如果编译器可以推导出参数的类型，也可以省略参数类型：(first, second) -> first.length() - second.length();
+    5.无需指定lambda表达式的返回类型，lambda表达式的返回类型总是会由上下文推到得出
+    6.函数式接口
+        1.对于只有一个抽象方法的接口，在需要这种接口的对象时，可以提供一个Lambda表达式，这种接口称为函数式接口
+        2.从ArrayList对象中删除元素：list.removeOf(e -> e == null);
+    7.方法引用
+        1.object::instanceMethod
+            Timer t = new Timer(1000, event -> System.out.println(event));
+            等价于
+            Timer t = new Timer(1000, System.out::println);
+        2.Class::staticMethod
+            Math::pow
+            等价于
+            (x, y) -> Math.pow(x, y);
+        3.Class::instanceMethod第一个参数会成为方法的目标
+            Arrays.sort(strings, String::compareToIgnoreCase); // 等价于(x, y) -> x.compareToIgnoreCase(y);
+        4.可以在方法引用中使用this参数，如：this.equals() 等价于 x->this.equals(x)
+    8.构造器引用
+        1.Person::new是Person的构造器引用
+            ArrayList<String> names = ...
+            Stream<Person> stream = names.stream().map(Person::new);
+            List<Person> people = stream.collect(Collectors.toList());
+        2.便于构造一个泛型类型T的数组，Java本身有一个限制无法构造，此时可以借助数组构造器引用
+            1.表达式new T[n]会产生错误，可以利用：
+                Object[] people = stream.toArray();
+            2.改进的方式，直接返回Person数组的引用：
+                Person[] people = stream.toArray(Person[]::new);
+    9.在lambda表达式中访问外围方法或者类中的变量
+        public static void repeatMessage(String text, int delay) {
+            ActionListener listener = event -> {
+                System.out.println(text);
+            }
+            new Timer(delay, listener).start();
+        }
+        有一个限制：在表达式中只能引用值，不能改变值，因为并发执行多个动作时不安全
+    10.lambda表达式的重点使用是延迟执行
+    11.要接受一个lambda表达式需要选择一个函数式接口，
+        1.例如Java提供的Runnable接口
+            调用：
+                repeat(10, () -> System.out.println("Hello, world"));
+            定义：
+                public static void repeat(int n, Runnable action) {
+                    for(int i = 0; i < n; i++) action.run(); // 调用run()会执行lambda表达式主体
+                }
+        2.自定义接口类
+            public interface IntConsumer {
+                void accept(int value);	// lambda表达式接口类只能有一个抽象方法，但是可以有默认实现方法
+            }
+            public class LambdaTest {
+	
+            public static void repeat(int n, IntConsumer action) {
+                for(int i = 0; i < n; i++) {
+                    action.accept(i);
+                }
+            }
+            public static void main(String[] args) {
+                repeat(10, i -> System.out.println("i = " + i));
+            }
+31.内部类
+    1.创建内部类的原因：
+        1.内部类方法可以访问该类定义的所在的作用域的数据，包括私有数据
+        2.内部类可以对同一个包中的其他类隐藏起来
+        3.当想要定义一个回调函数且不想编写大量的代码时，使用匿名内部类比较便捷
+    2.创建一个内部类对象
+        TimerPrinter类是TalkingClock的内部类
+        TalkingClock.TimerPrinter listener = talkingClock.new TimerPrinter();
+    3.内部类是一种编译器现象，与虚拟机无关
+        TalkingClock类内部的TimerPrinter类将被翻译成类文件TalkingClock$TimerPrinter.class
+    4.局部内部类--创建在方法中的类
+        1.不能用public或者private进行修饰，作用于被限定在这个局部类的块中
+        2.对外部世界可以完全隐藏起来，只有当前方法知道
+        3.局部类不仅可以访问包含它们的外部类，还可以访问方法的局部变量，但是这些局部变量i、必须事实上为final
+    5.匿名内部类
+        1.一般的语法
+            new SuperType(construction parameter) {
+                inner class methods and data...
+            }
+    6.静态内部类
+        使用内部类将一个类隐藏在另一个类内部，并不需要内部类引用外部类对象，这时可以将内部类声明成static，以便取消产生的引用
+32.Java异常
+    1.Java中异常对象都是派生于Throwable类的一个实例，同时用户可以创建自己的异常类
+        Throwable下面有两个分支
+            1.Error类：描述了Java运行时系统的内部错误和资源耗尽错误，应用程序不应该抛出这种类型的对象
+            2.Exception类，分为两个分支
+                1.RuntimeException类：包含以下几种情况：
+                    1.错误的类型转换
+                    2.数组越界访问
+                    3.访问null指针
+                2.IOException类：程序本身没有问题，但是由系统IO错误导致的这类异常
+                    1.试图在文件尾部读取数据
+                    2.试图打开一个不存在的文件
+                    3.试图根据指定的字符串查找Class对象，而这个字符串对应的类并不存在
+            3.Java语言规范将派生于Error类或RuntimeExcepion类的所有异常称为非受查异常(unchecked)，所有的其他异常称为受查异常（checked）
+    2.什么时候需要在方法中用throws子句声明异常？什么异常必须使用throws子句声明？下面4种情况应该抛出异常：
+        1.调用一个抛出受查异常的方法，如FileImputStream构造器
+        2.程序运行过程中发现错误，并且利用throw语句抛出一个受查异常
+        3.程序出现错误，如a[-1]=0抛出一个ArrayIndexOutOfBoundsException这样一个非受查异常
+        4.Java虚拟机和运行时库出现的内部错误
+            如果出现前1,2两种情况之一，则必须告诉调用这个方法的程序员有可能抛出异常，因为如果这个异常没有被捕获处理当前线程就会结束，如
+                public Image loadImage(String str) throws FileNotFoundException, EOFException {...}
+        5.不需要使用throws声明Java的内部错误，即从Error继承的错误，同时也不应该声明从RuntimeException继承的那些非受查异常，如：
+            void drawImage(int i) throws ArrayIndexOutOfBoundsException // 因为这些错误属于程序编写的逻辑问题，应该在程序中进行修正而不应该抛出
+            总之，一个方法必须声明所有可能抛出的受查异常，而非受查异常需要在方法中保证逻辑的正确性
+    3.子类声明的受查异常不能比超类方法声明的方法更加通用
+    4.如何在类方法中抛出异常？
+        1.找到一个合适的异常类
+        2.创建这个类的对象
+        3.将对象抛出
+        String readData(Scanner in) throws EOFException {
+            ...
+            while(...) {
+                if(n < len) {
+                    throw new EOFException();
+                }
+            }
+            return s;
+        }
+        4.如果只是传递一个异常的时候，只需要在方法中声明throws即可
+    5.如果任何标准异常类都没有描述清楚的问题，则需要创建自定义的异常类，创建方法如下：
+        1.定义一个派生于Exception的类或者派生于Exception子类的类
+        2.一般定义的类应该包含两个构造器，一个默认构造器，一个包含详细描述信息的构造器
+            class FileFormatException extends IOException {
+                public FileFormatException() {}
+                public FileFormatException(String gripe) {
+                    super(gripe);
+                }
+            }
+            之后在异常捕获处调用getMessage()方法可以获取详细的描述信息
+    6.捕获异常
+        1.如果异常发生的时候没有在任何地方进行捕获，则程序就会终止
+        2.想要捕获异常必须设置try/catch块
+            try {
+                code
+                more code
+            } catch (ExceptionType e) {
+                handler for this exception
+            } catch (FileNotFoundException | UnknownHostException e) { // 异常合并
+            }
+        3.通常异常捕获的处理方法是捕获那些知道如何处理的异常，将那些不知道怎么处理的异常继续进行传递
+        4.再次抛出异常的合理处理方式
+            try{
+                access the database
+            } catch (SQLException e) {
+                Throwable se = new ServletException("database error");
+                se.initCause(e); // 将原始异常设置为新异常的原因
+                throw se; // 在异常的捕获处调用Throwable e = se.getCause();可以获取到原始异常原因，而不会丢失原始异常的细节
+            } finally {
+                some code must be executed
+            }
+        5.不管是否有异常被捕获，finally子句中的代码都会被执行
+        6.强烈建议将try/finally和try/catch进行解耦
+            InputStream in = ...
+            try{
+                try{
+                    code that may throw exception
+                } finally{
+                    in.close();
+                }
+            } catch(IOException e) {
+                show some message
+            }
+            这样结构清晰
+    7.带资源的try语句
+        try(Resource res = ...) {
+            work with res
+        }
+        try块退出时会自动调用res.close()方法，避免编写嵌套的异常处理代码
+        如：
+        try(Scanner in = new Scanner(new FileInputStream("./some.txt")), "utf-8") {
+            while(in.hasNext()){
+                System.out.println(in.next());
+            }
+        }// 相当于自动使用了finally块，in.close()会被自动调用
+    8.使用异常机制的技巧
+        1.只在异常情况下使用异常，一般的测试中不要使用异常机制代替基本的测试程序
+        2.不要过分的细分异常，一般是将整个任务包装在一个try语句块中
+        3.不要只抛出RuntimeException异常，应该抛出更加适当的子类，或者创建自己的异常类
+        4.不要压制异常
+        5.早抛出，晚捕获
+33.使用断言
+    1.断言机制允许在测试期间向代码中插入一些检查语句，用来代替一些条件检查语句，当代码发布时这些插入的检测语句会被自动移走，不会影响程序的运行速度
+    2.Java使用断言的形式
+        1.assert 条件; // assert x > 0;
+        2.assert 条件 : 表达式; // assert x > 0 : x;
+    3.Java启用或者禁用断言需要在编译时增加选项，-ea或者-da
+    4.什么时候选择使用断言？
+        1.断言失败是致命的、不可恢复的错误
+        2.断言检查只用于开发和测试阶段
+34.使用泛型
+    1.泛型程序意味着编写的代码可以被很多不同类型的对象所使用，如ArrayList类
+    2.泛型使用类型参数来进行错误检查和避免取值时的强制类型转换，从而使程序具有更好的可读性和安全性，如：
+        ArrayList<String> list = new ArrayList<>();  // Java7之后构造函数中可以省略泛型类型
+    3.基本的泛型类结构
+        public class Pair<T, U> {
+            private T first;
+            private U second;
+
+            public T getFirst() {return first;}
+        }
+    4.泛型方法：定义一个带有类型参数的简单方法
+        1.
+            class ArrayAlg {
+                public static <T> T getMiddle(T... a) {return a[a.length - 2];}
+            }
+            其中类型变量放在修饰符的后面，返回类型的前面，调用泛型方法，在方法名前的尖括号中放入具体的类型：
+                String middle = ArrayAlg.<String>getMiddle("John", "Q.", "Public");
+            大多数情况下，编译器可以自动推断出参数的类型，所以<String>一般可以省略
+        2.泛型方法可以定义在普通方法中，也可以定义在泛型类中
+    5.类型变量的限定，设置类型变量实现了指定接口的方法：
+        public static <T extends Comparable> T min(T[] a){}
+        其中使用extends不使用implements原因：
+            如此记法：<T extends BoundingType> 表示T应该是绑定类型的子类型，T和绑定类型可以是类也可以是接口，选择extends关键字是更接近子类的概念
+        另一种多限定的写法：
+            <T extends Comparable & Serializable>
+    6.泛型代码和虚拟机
+        1.虚拟机没有泛型类型对象，所有的对象都属于普通类，所以会产生类型擦除：
+            1.如论何时定义了一个泛型类型，都自动提供一个相应的原始类型，擦除类型变量，并替换为限定类型，其中无限定的变量使用Object替换
+            2.C++中每个模板的实例化产生不同的类型，这一现象被称为"模板代码膨胀"，Java避免了这个问题
+            3.多限定的类型变量，会使用第一个限定类型来进行替换，上式中会使用Comparable替换Object，重要！！！
+            4.进行类型擦除之后，编译器会在字节码中强制插入类型转换的代码
+        2.类型擦除之后可能会产生多态问题，如方法名字一样，但是参数不同的情况，这时候编译器会使用桥方法来进行区分，会使用更严格的限定
+        3.不允许创建参数化类型的数组，如Pair<String>[] table = new Pair<String>[10]; // 这是错误的，不被允许！！！
+            可以使用另一种方式：ArrayList<Pair<String>>
+        4.如何实例化类型变量
+            1.不能使用像new T(...)或者T.class等方式实例化类型变量
+            2.方法一：使用函数式接口
+                public static <T> Pair<T> makePair(Supplier<T> constr) {
+                    return new Pair<>(constr.get(), constr.get());
+                }
+                调用：Pair<String> p = Pair.makePair(String::new);
+            3.方法二：使用传统的反射进行调用
+                public static <T> Pair<T> makePair(Class<T> c1){
+                    try{
+                        return new Pair<>(c1.newInstance(), c1.newInstance());
+                    } catch(Exception e) {return null;}
+                }
+                调用：Pair<String> p = Pair.makePair(String.class);
+        5.禁止使用带有类型变量的静态域和方法，因为类型擦除之后无法表达不同的实例
+        6.不能捕获或者抛出泛型类的实例
+    7.泛型类型的继承规则
+        1.无论S与T有什么联系，Pair<S>和Pair<T>都没有什么关系，主要是保证类型安全，但是他们之间可以相互转换，如ArrayList<T>实现List<T>接口
+    8.通配符类型
+        1.通配符的概念：
+            Pair<? extends Employee>表示任何泛型Pair类型，它的类型参数是Employee的子类，如Pair<Manager>
+        2.通配符解决的问题
+            如这样一个方法：
+                public static void printBuddies(Pair<Employee> p){}
+            因为不能将Pair<Manager>传递给这个方法，可以使用通配符类型来解决这个问题，改成如下形式：
+                public static void printBuddies(Pair<? extends Employee> p){}  // Pair<Manager>是Pair<? extends Employee>的子类型
+        3.通配符? extends Employee对象不能调用setXXX方法的原因：
+            如下代码：
+                Pair<Manager> managerBuddies = new Pair<>(ceo, cfo);
+                Pair<? extends Employee> wildcardBuddies = managerBuddies; // 正确
+                wildcardBuddies.setFirst(lowlyEmployee); // 会产生编译错误
+                错误原因：
+                    ? extends Employee getFirst() // 将此方法的返回值赋值给一个Employee的引用完全合理
+                    void setFirst(? extends Employee) // 参数类型表明编译器需要某个Employee的子类型，但不知道具体是什么类型，所以拒绝传递任何特定的类型，因为?不是用来进行匹配的，是表示未知的类型
+            ? extends Employee中的Employee被称为通配符的上限，因为需要传递的参数是Employee的子类(子类限定符)
+        4.通配符的超类型限定(超类限定符)
+            1.格式： ? super Menager通配符限制为Manager的所有超类型
+            2.与extends相反，可以用于为方法提供参数，但不能使用返回值，原因如下：
+                Pair<? super Manager>相当于有如下方法：
+                    void setFirst(? super Manager) // 合理的
+                    ? super Manager getFirst() // 不合理
+                例子如下：
+                    public static void minmaxBouns(Manager[] a, Pair<? super Manager> result) { // 从a经理数组中获取奖金最高的最低的两个，写入到result中
+                        Manager min = a[0];
+                        Manager max = a[1];
+                        result.setFirst(min); // 写入合理，这样在传递第二个参数的时候只要是Manager的父类就可以了，Pair<Employee>和Pair<Object>都行
+                        result.setSecond(max);
+                    }
+            3.总结：带有超类限定符的通配符可以向泛型对象写入，带有子类限定符的通配符可以从泛型对象读取
+        5.无限定通配符
+            1.格式：Pair<?>
+                ? getFirst() // 合理，返回值只能赋值给Object
+                void setFirst(?) // 不能被调用，除了setFirst(null);
+            2.可以将通配符版本和泛型版本进行转换
+                public static boolean hasNulls(Pair<?> p){}
+                pubic static <T> boolean hasNulls(Pair<T> p){}
+        6.泛型与反射
+            1.因为泛型类型参数会被擦除，所以反射得不到太多有用的信息
+35.Java集合框架
+    1.Collection接口
+        1.集合类的基本接口是Collection接口，包含两个比较重要的方法，一个是add()一个是Iterator迭代器方法iterator()
+    2.Iterator迭代器
+        1.基本使用方式
+            Collection<String> c = ...;
+            Iterator<String> iter = c.iterator();
+            while(iter.hasNext()) { // 或者使用for-each语句：for(String element : c){...}
+                String element = iter.next();
+                ....
+            }
+        2.Java8中提供了一种使用lambda表达式的方式：
+            iterator.forEachRemaining(element -> do something with element)
+        3.Java迭代器可以被认为是位于两个元素中间，当调用next时，迭代器就越过下一个元素，并返回刚刚越过那个元素的引用
+        4.因为Collection接口有很多方法，所以实现Collection比较麻烦，为此Java提供了一个类AbstractCollection抽象类，只需要实现size和iterator即可
+    3.集合框架有两种基本接口，Collection和Map，基于这两种接口扩展了很多的框架结构（实际上还有iterator和RandomAccess基本接口）
+    4.RandomAccess是一个标记接口，用来避免对链表进行耗时的随机访问操作，用来测试一个集合是否支持高效的随机访问
+        if(c instanceof RandomAccess) {
+            ....使用随机访问算法
+        } else {
+            ...使用顺序访问算法
+        }
+    5.Map结尾的集合实现了Map接口，其他的都实现了Collection接口
+    6.Java中的具体集合以及简介
+        ArrayList       一种可以动态增加和缩减的索引序列
+        LinkedList      一种可以在任何位置进行高效插入和删除的有序序列
+        ArrayDeque      一种用循环数组实现的双端队列
+        HashSet         一种没有重复元素的无序集合
+        TreeSet         一种有序集
+        EnumSet         一种包含枚举值类型的集
+        LinkedHashSet   一种可以记住元素插入次序的集
+        PriorityQueue   一种允许高效删除最小元素的集合
+        HashMap         一种存储key/value关系的键值结构
+        TreeMap         一种键值有序排列的映射表
+        EnumMap         一种键值属于枚举类型的映射表
+        LinkedHashMap   一种可以记住键值项添加次序的映射表
+        WeekHashMap     一种其值无用之后可以被垃圾回收器回收的映射表
+        IdentityHashMap 一种用==而不是equals比较的键值映射表
+    7.Java中的ArrayList和Vector类区别
+        Vector类的所有方法都是同步的，进行同步操作比较耗时
+        ArrayList是非同步的，在不需要进行同步时可以使用ArrayList效率比较高
+        Hashtable与HashMap类的作用是一样的，但是与Vector一样，Hashtable是同步的
+    8.散列集合原理
+        散列表使用hashCode()计算对象的散列码，散列表用链表数组来实现，每个列表被称为桶，想要查找表中对象的位置，要先计算它的散列码，然后与桶的总数取余，得到的结果就是元素桶的索引
+        如果遇到桶被占满的情况（散列冲突），这时需要用新对象与桶中的所有对象进行比较，查看这个对象是否已经存在
+        在Java8中桶满时，会从链表变成平衡二叉树
+        如果更改集合中的元素，导致元素的散列码发生变化，则元素在数据结构中的位置也会发生变化
+    9.TreeSet树集
+        1.树集是一个有序集合，采用红黑树进行排序
+        2.比较耗时
+    10.Map映射操作
+        1.使用lambda表达式进行遍历
+            Map<String, Integer> score = ...
+            score.forEach((k, v) -> {
+                System.out.println("key = " + k + ", value = " + v);
+            })
+        2.更新映射项value的值
+            常见做法是：
+                counts.put(word, counts.get(word)+1);
+            但是当第一次插入的时候get()会产生Null异常，不可使用的补救方法是:
+                1.counts.put(word, counts.getOrDefault(word, 0) + 1);
+                2.counts.putIfAbsent(word, 1); counts.put(word, counts.get(word)+1);
+                3.使用merge()进行简化：
+                    counts.merge(word, 1, Integer::sum); // 将原值与1求和
+        3.映射视图
+            1.集合框架有三种视图：键集、值集、键值对集
+                Set<K> keySet()
+                Collection<V> values()
+                Set<Map.entry<K, V>> entrySet()
+            2.键集
+                Set<String> keys = map.keySet();
+                for(String key : keys) {
+                    ...
+                }
+            3.键值对集
+                for(Map.entry<String, Employee> entry : staff.entrySet()) {
+                    String k = entrry.getKey();
+                    Employee v = entry.getValue();
+                    ....
+                }
+                以前这是最高效的遍历方法，Java8中可以使用forEach()的lambda代替
+                    counts.forEach((k, v) -> {
+                        ....
+                    })
+    11.枚举集
+        1.使用方式
+            enum Weekday {MONDAY, TUESDAY, WEDNESDAY};
+            EnumSet<Weekday> always = EnumSet.allOf(Weekday.class); // Set集合
+            EnumMap<Weekday, Employee> personInchange = new EnumMap<>(Weekday.class); // Map集合
+    12.轻量级集合包装器
+        1.Arrays类的静态方法asList()将返回一个包装了普通java数组的List包装器
+            Card[] cardDeck = new Card[52];
+            List<Card> cardList = Arrays.asList(cardDeck); // 返回的对象不是ArrayList而是一个视图对象，带有访问底层的get/set方法，注意对象大小不可以改变add/remove都不能使用，否则抛出异常
+        2.Collections类
+            Collections类包含很多实用方法，这些方法的参数和返回值都是集合，注意区分Collection接口
+    13.视图同步
+        类库设计者使用视图机制来确保常规集合的线程安全，而不是实现线程安全的集合类，如下面可以将一个Map转换成线程安全的Map：
+            Map<String, Employee> map = Collections.synchronizedMap(new HashMap<String, Employee>());
+    14.常用算法
+        可以在Collections类中进行查找，排序使用归并排序比较稳定，还有随机打乱列表中元素，二分查找等
+
+36.并发编程
+    1.创建一个线程
+        1.实现Runnable接口
+            public interface Runnable {
+                void run();
+            }
+            代码：
+                Runnable r = () -> { task code }; // 使用lambda表达式创建线程任务
+                Thread t = new Thread(r);
+                t.start(); // 不能调用run()方法，因为run()运行不会创建一个线程，而还是在原来的线程中执行
+        2.构建Thread的子类来创建线程
+            class MyThread extends Thread {
+                public void run() { task code }
+            }
+        注意：如果有很多任务，使用这种方式代价很大，建议改为线程池的方式
+        3.Callable接口
+            1.相比于Runnable，可以有一个返回值
+                public interface Callable<V> {
+                    V call() throws Ecception;
+                }
+            2.与FutureTask结合进行线程运算，可以获取线程的结果和取消线程等控制功能
+                MatchCounter counter = new MatchCounter(new File(directory), keyword); // 实现了implements Callable<Integer>接口
+                FutureTask<Integer> task = new FutureTask<>(counter);
+                Thread t = new Thread(task);
+                t.start(); // 启动线程
+                // task.get()可以获取线程的结果，会阻塞直到获取到结果
+                // task.cancel()可以结束线程
+    2.中断线程
+        1.没有可以强制中断线程的方法，interrupt()方法可以用来请求终止线程
+        2.当对一个线程调用了interrupt()方法时，线程的中断标志位被置位，所以线程中应该经常检查这个标志位，判断线程是否被中断
+            try{
+                while(!Thread.currentThread().isInterrupt() && other work todo) {
+                    // task code
+                    Thread.sleep(xx); // 如果线程代码中包含sleep()则在置位中断标志时sleep不会进入，而是直接产生一个异常，所以如果有sleep中断是否置位检测就没有意义了，可以不用检测
+                }
+            }catch (InterruptedException e) {
+                // exception from sleep/wait
+            }finally {...}
+        3.线程被阻塞时(如调用sleep/wait等)，无法检测中断状态，此时阻塞调用会产生一个InterruptedException异常中断
+        4.如果不在线程代码中处理中断，则还有如下两种方法可以让调用者来进行处理
+            1.方式一：
+                void myTask() {
+                    ...
+                    try{
+                        sleep(delay);
+                    } catch (InterruptedException e) { Thread.currentThread.interrupt();} // 设置中断标志位，让调用者进行判断处理
+                    ...
+                }
+            2.方式二更好的选择，抛出异常：
+                void myTask() throws InterruptedException {
+                    ...
+                    sleep(delay);
+                    ...
+                }
+    3.线程的状态
+        1.新创建（New）
+        2.可运行（Runnable）
+        3.被阻塞（Blocked）
+        4.Waiting（等待）
+        5.Timed Waiting（计时等待）
+        6.Terminated（被终止）
+    4.线程的一些属性
+        1.线程优先级
+        2.守护线程，永远不要去访问固有资源，如文件、数据库等，因为会在任何时候发生中断
+        3.可以为线程设置一个未捕获异常处理器，默认为空
+    5.线程之间的同步
+        1.锁对象
+            1.synchronized关键字
+            2.Java5中引入的ReentrantLock类
+                myLock.lock(); // 使用tryLock()可以设置加锁时长，同时不同于lock()的不能被中断，tryLock()可以被中断抛出异常，可以打破死锁
+                try { // 不能使用带资源的try语句
+                    critcal section
+                } finally {
+                    myLock.unlock();
+                }
+        2.条件对象 (conditional variable)
+            1.创建对象
+                private Condition sufficientFunds;
+                sufficientFunds = myLock.newCondition();
+            2.使用代码：
+                myLock.lock();
+                try{
+                    while(account[from] < amout) { // 如果剩余金额不足则进行等待，同时使用while也保证了从阻塞返回之后可以再次判断条件是否满足
+                        sufficientFunds.await(); // 进入阻塞等待被另一个存款线程激活                        
+                    }
+                    ...
+                    sufficientFunds.signalAll(); // 完成了资源的操作，最后再调用signalAll唤醒其他等待此条件对象的线程
+                }finally{
+                    myLock.unlock();
+                }                                    
+                另一个线程可以调用sufficientFunds.signalAll()或者signal()来激活
+                注意：
+                    1.signalAll()不会立即激活一个等待线程，仅仅是解除等待线程的阻塞，然后这些等待线程重新竞争锁对象，并从被阻塞的地方继续执行
+                    2.signal()函数是随机解除等待线程集中的某个线程，但是存在危险，如果随机选择的线程发现自己不能运行，那么将会再次被阻塞，将形成死锁
+                上述代码等价于synchronized的如下结构：
+                    public synchronized void transfer(){
+                        while(account[from] < amount) {
+                            wait();
+                        }
+                        ....
+                        notifyAll();
+                    }
+        3.锁和条件的作用总结：
+            1.锁用来保护代码片段，任何时刻只能有一个线程执行被保护的代码
+            2.锁可以管理试图进入被保护代码段的线程
+            3.锁可以拥有一个或者多个条件对象
+            4.每个条件对象管理那些已经进入被保护的代码但是还不能运行的线程
+        4.如果Bank类有一个静态同步方法，那么当该方法被调用时，Bank.class对象的锁被锁住，因此没有其它线程可以调用同一个类的这个或者任何其它静态方法
+        5.内部锁和条件存在的一些局限：
+            1.不能中断一个正在试图获得锁的线程
+            2.试图获得锁时不能设置超时
+            3.每个锁仅有单一的条件，可能是不够的
+            4.在代码中应该使用哪一种锁呢？
+                1.最好既不使用Lock/Condition也不使用synchronized关键字，可以使用java.util.concurent包中的机制进行加锁或者使用并行流
+                2.如果synchronized比较适合程序，可以优先选用
+                3.特别的结构可以使用Lock/Condition对象
+        6.volatile关键字
+            1.volatile关键字为实例域的同步访问提供了一种免锁机制，让虚拟机和编译器知道该域是可能被另一个线程并发更新的
+                private volatile boolean done; // 此时编译器被要求通过在必要的时候刷新本地缓存来保持锁的效应，并且防止不正当的指令重排
+                public boolean isDone(){return done;} // 可以用来代替方法上的synchronized关键字
+                public void setDone(boolean done) {done = done;}
+            2.对共享变量除了赋值之外并不完成其他操作，那么可将这些共享变量声明成volatile
+        7.原子操作
+            1.java.util.concurent.atomic包中提供了很多原子操作类
+                1.AtomicInteger提供了incrementAndGet()方法会以原子的方式将一个值自增1，即获得值、增1、设置新值不会中断
+            2.如果存在大量竞争，则需要改用LongAdder而不是AtomicLong
+        8.线程局部变量
+            1.ThreadLocal可以为不同线程提供各自的实例，如不同线程都有一个SimpleDateFormat对象
+                为每个线程构造一个实例：
+                    public static final ThreadLocal<SimpleDateFormat> dateFormat = 
+                        ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
+                访问调用方式：
+                    String dateStamp = dateFormat.get().format(new Date()); // get()会调用initialValue()会返回属于当前线程的实例
+            2.随机数局部对象，Java7提供了一个便利的方式：
+                int random = ThreadLocalRandom.current().nextInt(upperBounds);
+        9.读写锁
+            1.如果读操作比写操作要频繁，可以考虑使用ReentrantReadWriteLock类，而不是ReetrantLock类
+            2.读写锁可以单独获取读锁和写锁，从而可以区分代码
+        10.阻塞队列，可以使用各种队列结构完成一些线程协作任务
+        11.线程安全的集合
+            1.ConcurrentHashMap、ConcurrentSkipListMap、ConcurrentSkipListSet、ConcurrentLinkedQueue
+            2.传统的Map更新值方式
+                do {
+                    oldValue = map.get(word);
+                    newValue = oldValue == null ? 1 : oldValue+1;
+                } while(!map.replace(word, oldValue, newValue)); // 如果有其他线程修改值，则会一直重试直到replace成功
+            3.使用ConcurrentHashMap方式
+                map.getIfAbsent(word, new LongAdder());
+                map.get(word).increment();
+            4.使用lambda表达式
+                map.compute(word, (k, v) -> v == null ? 1 : v+1);
+        12.使用执行器类Executor构建线程池
+            1.常用的Executors类工厂方法：
+                1.newCachedThreadPool必要时创建新线程；空闲线程会被保留60秒
+                2.newFixedThreadPool该池包含固定数量的线程；空闲线程会一直保留；池满的时候新提交的任务会被放到队列中等待空闲线程
+                3.newSingleThreadExecutor只有一个线程的池，该线程顺序执行每一个提交的任务
+                4.newScheduledThreadPool用于预定执行而构建的固定线程池，替代java.util.Timer
+                5.newSingleThreadScheduledExecutor用于预定执行而构建的单线程池
+            2.线程池使用的步骤：
+                1.调用Executors类中上述静态的方法创建线程池
+                    ExecutorService pool = Executors.newCachedThreadPool();
+                2.调用submit()提交Runnable或Callable对象
+                3.如果想要取消一个任务，如果提交的是Callable对象，就需要保存好返回的FutureTask对象
+                4.当关闭线程池时，可以使用shutdown方法会等待线程池任务结束，或者调用shutdownNow立即结束所有线程任务
+            3.Java7中引入了Fork-Join框架来完成一些计算密集型任务
+        13.使用Java8提供的CompletableFuture类可以设置非阻塞调用结果的事件处理器
+        14.Java中提供的同步器
+            1.CyclicBarrier 允许线程集等待直至其中预定数目的线程到达一个公共点，然后可以选择一个处理动作
+            2.Phaser        Java7中引入，比上一个多了一个计数器
+            3.CountDownLatch 允许线程集等待直到计数器减为0
+            4.Exchanger     允许两个线程在要交换的对象准备好时交换对象
+            5.Semaphore     信号量，允许线程集等待直到被允许运行时运行
+            6.SynchronousQueue 允许一个线程把对象交给另一个线程
+
+--------------------------------------------------JAVA基础部分----------------------------------------
