@@ -1376,9 +1376,9 @@
 
 ### 第十章 文件处理
 
-#### 1. 文本文件
+#### 1. 文件读写
 
-1. 文件操作基本规则
+1. ###### 文件操作基本规则
 
    1. 文件名称一般以英文、数字、汉字开头易于阅读
 
@@ -1419,43 +1419,220 @@
 
    7. 在指定位置读取
 
-      1. f.tell()方法返回当前文件操作指示器所在的字节偏移位置
-      2. f.seek(offset [, whence])，offset参数设置位置的偏移量，whence确定文件起始位置：SEEK_SET代表从文件开头读取；SEEK_CUR表示当前位置；SEEK_END表示文件尾
+      1. f.tell()方法返回当前文件操作指示器所在的字节偏移位置；
+      2. f.seek(offset [, whence])，offset参数设置位置的偏移量，whence确定文件起始位置：SEEK_SET代表从文件开头读取；SEEK_CUR表示当前位置；SEEK_END表示文件尾；
 
-   8. 文件操作异常处理
+2. ###### 文件操作异常处理
 
-      ```python
-      f_n = r'd:\t3.txt'
-      flag = False
-      
-      try:
-          f = open(f_n, 'r')
-          print(f.read())
-          flag = True
-      except:
-          print('打开文件%s出错，请检查' % f_n)
-      finally:
-          if flag:
-              f.close()
-              print('文件做关闭处理')
-          else:
-              print('程序关闭')
-      ```
+```python
+f_n = r'd:\t3.txt'
 
-   9. 文件与路径相关的：在os模块中通过path对象来实现对路径的各种操作
+try:
+    f = open(f_n, 'r')
+    print(f.read())
+except:
+    print('打开文件%s出错，请检查' % f_n)
+finally:
+    if f:
+        f.close()
+        print('文件做关闭处理')
+    else:
+        print('程序关闭')
+```
 
-      1. 获取程序运行的当前路：`cur_path =os.path.abspath(os.path.curdir)`
-      2. 判断指定路径下是否存在文件：`os.path.exists(r'd:\t1.txt')`或者 `os.path.isfile(r'd:\t1.txt')`
-      3. 判断指定的路径是否存在：`os.path.isdir(path)`或者 `os.path.exists(path)`
-      4. 建立文件夹（子路径）: `os.makedirs(path)`，建立失败则抛出OSError错误信息
+​	每次都写文件关闭太麻烦了，Python中引入了`with`语句来自动调用`close()`方法
+
+```python
+whith open(r'd:\t3.txt') as f:
+	print(f.read())
+```
+
+> 调用read()会一次性读取文件所有内容，如果文件有20G，内存就爆了，所以一般保险操作是反复调用read(size)函数，分多次每次只读取size个字节；另外，调用readline()可以每次读取一行内容；调用readlines()可以一次读取所有内容并按行返回list结构，具体根据情况进行选择。
+
+```python
+for line in f.readlines():
+	print(line.strip()) # 删除末尾的\n
+```
+
+3. ###### file-like Object
+
+   1. 像`open()`函数返回的这种有个`read()`方法的对象，在Python中统称为file-like Object。除了file外，还可以是内存的字节流，网络流，自定义流等等。file-like Object不要求从特定类继承，只要写个`read()`方法就行。
+   2. `StringIO`就是在内存中创建的file-like Object，常用作临时缓冲，稍后介绍。
+
+4. ###### 字符编码
+
+   1. 要读取非UTF-8编码的文本文件，需要给`open()`函数传入`encoding`参数，例如，读取utf-8编码的文件：
+
+   ```python
+   f = open(r'd:\a.txt', 'r', encoding = 'utf-8')
+   f.read()
+   ```
+
+   > 遇到有些编码不规范的文件，你可能会遇到`UnicodeDecodeError`，因为在文本文件中可能夹杂了一些非法编码的字符。遇到这种情况，`open()`函数还接收一个`errors`参数，表示如果遇到编码错误后如何处理。最简单的方式是直接忽略，追加参数：errors='ignore'
+
+5. ###### 写文件
+   1. 写文件和读文件是一样的，唯一区别是调用`open()`函数时，传入标识符`'w'`或者`'wb'`表示写文本文件或写二进制文件
+   2. 你可以反复调用`write()`来写入文件，但是务必要调用`f.close()`来关闭文件。当我们写文件时，操作系统往往不会立刻把数据写入磁盘，而是放到内存缓存起来，空闲的时候再慢慢写入。只有调用`close()`方法时，操作系统才保证把没有写入的数据全部写入磁盘。忘记调用`close()`的后果是数据可能只写了一部分到磁盘，剩下的丢失了。所以，还是用`with`语句来得保险：
+
+   ```python
+   with open('/Users/michael/test.txt', 'w') as f:
+       f.write('Hello, world!')
+   ```
+
+   > 要写入特定编码的文本文件，请给`open()`函数传入`encoding`参数，将字符串自动转换成指定编码；
+   >
+   > 另外，以`'w'`模式写入文件时，如果文件已存在，会直接覆盖（相当于删掉后新写入一个文件）
 
 ---
 
-#### 2. JSON格式文件
+#### 2. StringIO
 
-1. JSON格式基本知识
+1. StringIO顾名思义就是在内存中读写字符串数据
 
-2. JSON数据类型与Python数据之间相互转化规则：
+2. 写入StringIO
+
+   要把str写入StringIO，我们需要先创建一个StringIO，然后，像文件一样写入即可：
+
+   ```python
+   >>> from io import StringIO
+   >>> f = StringIO()
+   >>> f.write('hello')
+   5
+   >>> f.write(' ')
+   1
+   >>> f.write('world!')
+   6
+   >>> print(f.getvalue()) # 获取写入后的str
+   hello world!
+   ```
+
+3. 读取StringIO
+
+   ```python
+   >>> from io import StringIO
+   >>> f = StringIO('Hello!\nHi!\nGoodbye!')
+   >>> while True:
+   ...     s = f.readline()
+   ...     if s == '':
+   ...         break
+   ...     print(s.strip())
+   ...
+   Hello!
+   Hi!
+   Goodbye!
+   ```
+
+1. BytesIO读写
+
+   1. StringIO操作的只能是str，如果要操作二进制数据，就需要使用BytesIO。
+
+   2. BytesIO实现了在内存中读写bytes，我们创建一个BytesIO，然后写入一些bytes：
+
+      ```python
+      >>> from io import BytesIO
+      >>> f = BytesIO()
+      >>> f.write('中文'.encode('utf-8'))
+      6
+      >>> print(f.getvalue())
+      b'\xe4\xb8\xad\xe6\x96\x87'
+      ```
+
+   3. 与StringIO类似，可以用一个bytes初始化BytesIO，然后，与读取文件具有一致的接口；
+
+---
+
+#### 3. 操作文件和目录
+
+​	1. 文件与路径相关：在os模块中通过path对象来实现对路径的各种操作
+
+​		1. 获取程序运行的当前路：`cur_path =os.path.abspath(os.path.curdir)`
+
+​		2. 判断指定路径下是否存在文件：`os.path.exists(r'd:\t1.txt')`或者 `os.path.isfile(r'd:\t1.txt')`
+
+​		3. 判断指定的路径是否存在：`os.path.isdir(path)`或者 `os.path.exists(path)`
+
+​		4. 建立文件夹（子路径）: `os.makedirs(path)`，建立失败则抛出OSError错误信息
+
+```python
+# 查看当前目录的绝对路径:
+>>> os.path.abspath('.')
+'/Users/michael'
+# 在某个目录下创建一个新目录，首先把新目录的完整路径表示出来:
+>>> os.path.join('/Users/michael', 'testdir')
+'/Users/michael/testdir'
+# 拆分路径，把一个路径拆分为两部分，后一部分总是最后级别的目录或文件名
+>>> os.path.split('/Users/michael/testdir/file.txt')
+('/Users/michael/testdir', 'file.txt')
+# 得到文件扩展名
+>>> os.path.splitext('/path/to/file.txt')
+('/path/to/file', '.txt')
+# 然后创建一个目录:
+>>> os.mkdir('/Users/michael/testdir')
+# 删掉一个目录:
+>>> os.rmdir('/Users/michael/testdir')
+# 对文件重命名:
+>>> os.rename('test.txt', 'test.py')
+# 删掉文件:
+>>> os.remove('test.py')
+```
+
+> 把两个路径合成一个时，不要直接拼字符串，而要通过`os.path.join()`函数，这样可以正确处理不同操作系统的路径分隔符。
+>
+> `另外，shutil`模块提供了`copyfile()`的函数，你还可以在`shutil`模块中找到很多实用函数，它们可以看做是`os`模块的补充。
+
+ 2. 列出当前目录下的所有目录
+
+    ```python
+    >>> [x for x in os.listdir('.') if os.path.isdir(x)]
+    ['.lein', '.local', '.m2', '.npm', '.ssh', '.Trash', '.vim', 'Applications', 'Desktop', ...]
+    ```
+
+	3. 列出所有的`.py`文件
+
+    ```python
+    >>> [x for x in os.listdir('.') if os.path.isfile(x) and os.path.splitext(x)[1]=='.py']
+    ['apis.py', 'config.py', 'models.py', 'pymonitor.py', 'test_db.py', 'urls.py', 'wsgiapp.py']
+    ```
+
+---
+
+#### 4. 序列化与JSON格式
+
+1. 序列化定义：
+
+   我们把变量从内存中变成可存储或传输的过程称之为序列化；反过来，把变量内容从序列化的对象重新读到内存里称之为反序列化，Python提供了pickle模块来实现序列化；
+
+2. 把一个对象序列化并返回bytes类型数据：
+
+   ```python
+   >>> import pickle
+   >>> d = dict(name='Bob', age=20, score=88)
+   >>> pickle.dumps(d)
+   b'\x80\x03}q\x00(X\x03\x00\x00\x00ageq\x01K\x14X\x05\x00\x00\x00scoreq\x02KXX\x04\x00\x00\x00nameq\x03X\x03\x00\x00\x00Bobq\x04u.'
+   ```
+
+   ```python
+   # 另一个方法pickle.dump()直接把对象序列化后写入一个file-like Object
+   >>> f = open('dump.txt', 'wb')
+   >>> pickle.dump(d, f)
+   >>> f.close()
+   ```
+
+3. 读取序列化对象到内存
+
+   1. 用`pickle.loads()`方法反序列化出对象，也可以直接用`pickle.load()`方法从一个`file-like Object`中直接反序列化出对象
+
+      ```Python
+      >>> f = open('dump.txt', 'rb')
+      >>> d = pickle.load(f)
+      >>> f.close()
+      >>> d
+      {'age': 20, 'score': 88, 'name': 'Bob'}
+      ```
+
+      > Pickle的问题和所有其他编程语言特有的序列化问题一样，就是它只能用于Python，并且可能不同版本的Python彼此都不兼容，因此，只能用Pickle保存那些不重要的数据，不能成功地反序列化也没关系。
+
+4. JSON对象与Python对象之间相互转化规则：
 
    | 从Python开始序列化         | 从JSON反序列化 |            |
    | -------------------------- | -------------- | ---------- |
@@ -1477,11 +1654,468 @@
    j_to_p = json.loads(p_to_j)  # 把JSON反序列化
    ```
 
-3. 读写JSON文件：Python专门为读写文件提供了dump()和load()方法
+5. 读写JSON
+
+   1. `dumps()`方法返回一个`str`，内容就是标准的JSON；类似的，`dump()`方法可以直接把JSON写入一个`file-like Object`
+   2. 要把JSON反序列化为Python对象，用`loads()`或者对应的`load()`方法，前者把JSON的字符串反序列化，后者从`file-like Object`中读取字符串并反序列化
+
+   > 由于JSON标准规定JSON编码是UTF-8，所以我们总是能正确地在Python的`str`与JSON的字符串之间转换。
+
+6. JSON进阶：序列化class类
+
+   1. Python的`dict`对象可以直接序列化为JSON的`{}`，不过，很多时候，我们更喜欢用`class`表示对象，比如定义`Student`类，然后序列化：
+
+      ```python
+      import json
+      
+      class Student(object):
+          def __init__(self, name, age, score):
+              self.name = name
+              self.age = age
+              self.score = score
+      
+          # 可选参数default就是把任意一个对象变成一个可序列为JSON的对象，我们只需要为Student专门写一个转换函数，再把对象传进去即可
+          def student2dict(self, std):
+              return {
+                  'name': std.name,
+                  'age': std.age,
+                  'score': std.score
+              }
+      
+      s = Student('Bob', 20, 88)
+      # Student实例首先被student2dict()函数转换成dict，然后再被顺利序列化为JSON
+      print(json.dumps(s, default=s.student2dict))
+      # 结果：{"age": 20, "name": "Bob", "score": 88}
+      ```
+
+      有一种偷懒的简化写法：
+
+      ```python
+      。。。。
+      print(json.dumps(s, default=lambda s: s.__dict__))
+      。。。
+      ```
+
+   2. 把JSON反序列化为Student对象
+
+      1. `loads()`方法首先转换出一个`dict`对象，然后，我们传入的`object_hook`函数负责把`dict`转换为`Student`实例
+
+         ```python
+         def dict2student(d):
+             return Student(d['name'], d['age'], d['score'])
+            
+         >>> json_str = '{"age": 20, "score": 88, "name": "Bob"}'
+         >>> print(json.loads(json_str, object_hook=dict2student))
+         <__main__.Student object at 0x10cd3c190>  
+         ```
+
+         > 打印出的是反序列化的`Student`实例对象
 
 ---
 
-#### 3. XML格式文件
+### 第十一章 进程和线程
 
-1. XML基本知识
-2. xml模块：SAX和DOM
+---
+
+### 第十二章 正则表达式
+
+---
+
+### 第十三章 常用内建模块
+
+#### 1. datetime
+
+ 1. datetime是Python处理日期和时间的标准库；
+
+ 2. 获取当前日期和时间
+
+    ```python
+    >>> from datetime import datetime
+    >>> now = datetime.now() # 获取当前datetime
+    >>> print(now)
+    2015-05-18 16:28:07.198690
+    >>> print(type(now))
+    <class 'datetime.datetime'>
+    ```
+
+    > 注意到`datetime`是模块，`datetime`模块还包含一个`datetime`类，通过`from datetime import datetime`导入的才是`datetime`这个类。
+    >
+    > 如果仅导入`import datetime`，则必须引用全名`datetime.datetime`。
+    >
+    > `datetime.now()`返回当前日期和时间，其类型是`datetime`。
+
+    3. 获取指定日期和时间
+
+    	1. 要指定某个日期和时间，我们直接用参数构造一个`datetime`
+
+        ```python
+        >>> from datetime import datetime
+        >>> dt = datetime(2015, 4, 19, 12, 20) # 用指定日期时间创建datetime
+        >>> print(dt)
+        2015-04-19 12:20:00
+        ```
+
+    4. datetime转换为timestamp
+
+       1. 在计算机中，时间实际上是用数字表示的。我们把1970年1月1日 00:00:00 UTC+00:00时区的时刻称为epoch time，记为`0`（1970年以前的时间timestamp为负数），当前时间就是相对于epoch time的秒数，称为timestamp。
+
+       2. timestamp的值与时区没有关系，因为timestamp一旦确定，其UTC时间也就确定了，转换到任意时区的时间也是完全确定的。
+
+          1. 把一个`datetime`类型转换为timestamp只需要简单调用`timestamp()`方法：
+
+          ```python
+          >>> from datetime import datetime
+          >>> dt = datetime(2015, 4, 19, 12, 20) # 用指定日期时间创建datetime
+          >>> dt.timestamp() # 把datetime转换为timestamp
+          1429417200.0
+          ```
+
+          > 注意Python的timestamp是一个浮点数。如果有小数位，小数位表示毫秒数
+
+    5. timestamp转换成datetime
+
+       1. 要把timestamp转换为`datetime`，使用`datetime`提供的`fromtimestamp()`方法：
+
+          ```python
+          >>> from datetime import datetime
+          >>> t = 1429417200.0
+          >>> print(datetime.fromtimestamp(t))
+          2015-04-19 12:20:00
+          ```
+
+          > 注意到timestamp是一个浮点数，它没有时区的概念，而datetime是有时区的。上述转换是在timestamp和本地时间做转换。
+
+       2. timestamp也可以直接被转换到UTC标准时区的时间：
+
+          ```python
+          >>> from datetime import datetime
+          >>> t = 1429417200.0
+          >>> print(datetime.fromtimestamp(t)) # 本地时间
+          2015-04-19 12:20:00
+          >>> print(datetime.utcfromtimestamp(t)) # UTC时间
+          2015-04-19 04:20:00
+          ```
+
+    6. str转换为datetime
+
+       ```python
+       >>> from datetime import datetime
+       >>> cday = datetime.strptime('2015-6-1 18:19:59', '%Y-%m-%d %H:%M:%S')
+       >>> print(cday)
+       2015-06-01 18:19:59
+       ```
+
+    7. datetime转换为str
+
+       ```python
+       >>> from datetime import datetime
+       >>> now = datetime.now()
+       >>> print(now.strftime('%a, %b %d %H:%M'))
+       Mon, May 05 16:28
+       ```
+
+    8. datetime加减
+
+       1. 加减可以直接用`+`和`-`运算符，不过需要导入`timedelta`这个类：
+
+          ```python
+          >>> from datetime import datetime, timedelta
+          >>> now = datetime.now()
+          >>> now
+          datetime.datetime(2015, 5, 18, 16, 57, 3, 540997)
+          >>> now + timedelta(hours=10)
+          datetime.datetime(2015, 5, 19, 2, 57, 3, 540997)
+          >>> now - timedelta(days=1)
+          datetime.datetime(2015, 5, 17, 16, 57, 3, 540997)
+          >>> now + timedelta(days=2, hours=12)
+          datetime.datetime(2015, 5, 21, 4, 57, 3, 540997)
+          ```
+
+    9. 本地时间转换为UTC时间
+
+       1. 本地时间是指系统设定时区的时间，例如北京时间是UTC+8:00时区的时间，而UTC时间指UTC+0:00时区的时间。一个`datetime`类型有一个时区属性`tzinfo`，但是默认为`None`，所以无法区分这个`datetime`到底是哪个时区，除非强行给`datetime`设置一个时区：
+
+          ```python
+          >>> from datetime import datetime, timedelta, timezone
+          >>> tz_utc_8 = timezone(timedelta(hours=8)) # 创建时区UTC+8:00
+          >>> now = datetime.now()
+          >>> now
+          datetime.datetime(2015, 5, 18, 17, 2, 10, 871012)
+          >>> dt = now.replace(tzinfo=tz_utc_8) # 强制设置为UTC+8:00
+          >>> dt
+          datetime.datetime(2015, 5, 18, 17, 2, 10, 871012, tzinfo=datetime.timezone(datetime.timedelta(0, 28800)))
+          ```
+
+          > 如果系统时区恰好是UTC+8:00，那么上述代码就是正确的，否则，不能强制设置为UTC+8:00时区。
+
+       2. 时区转换
+
+          1. 我们可以先通过`utcnow()`拿到当前的UTC时间，再转换为任意时区的时间：
+
+             ```python
+             # 拿到UTC时间，并强制设置时区为UTC+0:00:
+             >>> utc_dt = datetime.utcnow().replace(tzinfo=timezone.utc)
+             >>> print(utc_dt)
+             2015-05-18 09:05:12.377316+00:00
+             # astimezone()将转换时区为北京时间:
+             >>> bj_dt = utc_dt.astimezone(timezone(timedelta(hours=8)))
+             >>> print(bj_dt)
+             2015-05-18 17:05:12.377316+08:00
+             # astimezone()将转换时区为东京时间:
+             >>> tokyo_dt = utc_dt.astimezone(timezone(timedelta(hours=9)))
+             >>> print(tokyo_dt)
+             2015-05-18 18:05:12.377316+09:00
+             # astimezone()将bj_dt转换时区为东京时间:
+             >>> tokyo_dt2 = bj_dt.astimezone(timezone(timedelta(hours=9)))
+             >>> print(tokyo_dt2)
+             2015-05-18 18:05:12.377316+09:00
+             ```
+
+---
+
+2. #### collections集合
+
+collections是Python内建的一个集合模块，提供了许多有用的集合类。
+
+1. namedtuple
+
+   1. 我们知道`tuple`可以表示不变集合，例如，一个点的二维坐标就可以表示成：`p = (1, 2)`,但是，看到`(1, 2)`，很难看出这个`tuple`是用来表示一个坐标的,定义一个class又小题大做了，这时，`namedtuple`就派上了用场:
+
+      ```python
+      >>> from collections import namedtuple
+      >>> Point = namedtuple('Point', ['x', 'y'])
+      >>> p = Point(1, 2)
+      >>> p.x
+      1
+      >>> p.y
+      2
+      ```
+
+      `namedtuple`是一个函数，它用来创建一个自定义的`tuple`对象，并且规定了`tuple`元素的个数，并可以用属性而不是索引来引用`tuple`的某个元素。
+
+      这样一来，我们用`namedtuple`可以很方便地定义一种数据类型，它具备tuple的不变性，又可以根据属性来引用，使用十分方便，类似的，如果要用坐标和半径表示一个圆，也可以用`namedtuple`定义：
+
+      ```python
+      # namedtuple('名称', [属性list]):
+      Circle = namedtuple('Circle', ['x', 'y', 'r'])
+      ```
+
+2. deque双向列表
+
+   1. deque是为了高效实现插入和删除操作的双向列表，适合用于队列和栈：
+
+      ```python
+      >>> from collections import deque
+      >>> q = deque(['a', 'b', 'c'])
+      >>> q.append('x')
+      >>> q.appendleft('y')
+      >>> q
+      deque(['y', 'a', 'b', 'c', 'x'])
+      ```
+
+      > `deque`除了实现list的`append()`和`pop()`外，还支持`appendleft()`和`popleft()`，这样就可以非常高效地往头部添加或删除元素。
+
+3. 带默认值字典defaultdict
+
+   1. 使用`dict`时，如果引用的Key不存在，就会抛出`KeyError`。如果希望key不存在时，返回一个默认值，就可以用`defaultdict`：
+
+      ```python
+      >>> from collections import defaultdict
+      >>> dd = defaultdict(lambda: 'N/A')
+      >>> dd['key1'] = 'abc'
+      >>> dd['key1'] # key1存在
+      'abc'
+      >>> dd['key2'] # key2不存在，返回默认值
+      'N/A'
+      ```
+
+4. 有序key的字典OrderedDict
+
+   1. 使用`dict`时，Key是无序的。在对`dict`做迭代时，我们无法确定Key的顺序，如果要保持Key的顺序，可以用`OrderedDict`：
+
+      ```python
+      >>> from collections import OrderedDict
+      >>> d = dict([('a', 1), ('b', 2), ('c', 3)])
+      >>> d # dict的Key是无序的
+      {'a': 1, 'c': 3, 'b': 2}
+      >>> od = OrderedDict([('a', 1), ('b', 2), ('c', 3)])
+      >>> od # OrderedDict的Key是有序的
+      OrderedDict([('a', 1), ('b', 2), ('c', 3)])
+      ```
+
+      > 注意，`OrderedDict`的Key会按照插入的顺序排列，不是Key本身排序;
+
+   2. `OrderedDict`可以实现一个FIFO（先进先出）的dict，当容量超出限制时，先删除最早添加的Key:
+
+      ```python
+      from collections import OrderedDict
+      
+      class LastUpdatedOrderedDict(OrderedDict):
+      
+          def __init__(self, capacity):
+              super(LastUpdatedOrderedDict, self).__init__()
+              self._capacity = capacity
+      
+          def __setitem__(self, key, value):
+              containsKey = 1 if key in self else 0
+              if len(self) - containsKey >= self._capacity:
+                  last = self.popitem(last=False)
+                  print('remove:', last)
+              if containsKey:
+                  del self[key]
+                  print('set:', (key, value))
+              else:
+                  print('add:', (key, value))
+              OrderedDict.__setitem__(self, key, value)
+      ```
+
+5. 组合dict的ChainMap
+
+   1. `ChainMap`可以把一组`dict`串起来并组成一个逻辑上的`dict`。`ChainMap`本身也是一个dict，但是查找的时候，会按照顺序在内部的dict依次查找。
+
+   什么时候使用`ChainMap`最合适？举个例子：应用程序往往都需要传入参数，参数可以通过命令行传入，可以通过环境变量传入，还可以有默认参数。我们可以用`ChainMap`实现参数的优先级查找，即先查命令行参数，如果没有传入，再查环境变量，如果没有，就使用默认参数。
+
+   下面的代码演示了如何查找`user`和`color`这两个参数：
+
+   ```python
+   from collections import ChainMap
+   import os, argparse
+   
+   # 构造缺省参数:
+   defaults = {
+       'color': 'red',
+       'user': 'guest'
+   }
+   
+   # 构造命令行参数:
+   parser = argparse.ArgumentParser()
+   parser.add_argument('-u', '--user')
+   parser.add_argument('-c', '--color')
+   namespace = parser.parse_args()
+   command_line_args = { k: v for k, v in vars(namespace).items() if v }
+   
+   # 组合成ChainMap:
+   combined = ChainMap(command_line_args, os.environ, defaults)
+   
+   # 打印参数:
+   print('color=%s' % combined['color'])
+   print('user=%s' % combined['user'])
+   ```
+
+   没有任何参数时，打印出默认参数：
+
+   ```python
+   $ python3 use_chainmap.py 
+   color=red
+   user=guest
+   ```
+
+   当传入命令行参数时，优先使用命令行参数：
+
+   ```python
+   $ python3 use_chainmap.py -u bob
+   color=red
+   user=bob
+   ```
+
+   同时传入命令行参数和环境变量，命令行参数的优先级较高：
+
+   ```python
+   $ user=admin color=green python3 use_chainmap.py -u bob
+   color=green
+   user=bob
+   ```
+
+6. 计数器Counter
+
+   1. `Counter`是一个简单的计数器，例如，统计字符出现的个数：
+
+      ```python
+      >>> from collections import Counter
+      >>> c = Counter()
+      >>> for ch in 'programming':
+      ...     c[ch] = c[ch] + 1
+      ...
+      >>> c
+      Counter({'g': 2, 'm': 2, 'r': 2, 'a': 1, 'i': 1, 'o': 1, 'n': 1, 'p': 1})
+      >>> c.update('hello') # 也可以一次性update
+      >>> c
+      Counter({'r': 2, 'o': 2, 'g': 2, 'm': 2, 'l': 2, 'p': 1, 'a': 1, 'i': 1, 'n': 1, 'h': 1, 'e': 1})
+      ```
+
+      > 可以获取每个字符出现的次数
+
+---
+
+#### 3. base64
+
+Base64是一种用64个字符来表示任意二进制数据的方法。
+
+用记事本打开`exe`、`jpg`、`pdf`这些文件时，我们都会看到一大堆乱码，因为二进制文件包含很多无法显示和打印的字符，所以，如果要让记事本这样的文本处理软件能处理二进制数据，就需要一个二进制到字符串的转换方法。Base64是一种最常见的二进制编码方法。
+
+Base64的原理很简单，首先，准备一个包含64个字符的数组：
+
+```pyhton
+['A', 'B', 'C', ... 'a', 'b', 'c', ... '0', '1', ... '+', '/']
+```
+
+然后，对二进制数据进行处理，每3个字节一组，一共是`3x8=24`bit，划为4组，每组正好6个bit：
+
+![base64-encode](https://www.liaoxuefeng.com/files/attachments/949444125467040)
+
+这样我们得到4个数字作为索引，然后查表，获得相应的4个字符，就是编码后的字符串。
+
+所以，Base64编码会把3字节的二进制数据编码为4字节的文本数据，长度增加33%，好处是编码后的文本数据可以在邮件正文、网页等直接显示。
+
+如果要编码的二进制数据不是3的倍数，最后会剩下1个或2个字节怎么办？Base64用`\x00`字节在末尾补足后，再在编码的末尾加上1个或2个`=`号，表示补了多少字节，解码的时候，会自动去掉。
+
+Python内置的`base64`可以直接进行base64的编解码：
+
+```python
+>>> import base64
+>>> base64.b64encode(b'binary\x00string')
+b'YmluYXJ5AHN0cmluZw=='
+>>> base64.b64decode(b'YmluYXJ5AHN0cmluZw==')
+b'binary\x00string'
+```
+
+由于标准的Base64编码后可能出现字符`+`和`/`，在URL中就不能直接作为参数，所以又有一种"url safe"的base64编码，其实就是把字符`+`和`/`分别变成`-`和`_`：
+
+```python
+>>> base64.b64encode(b'i\xb7\x1d\xfb\xef\xff')
+b'abcd++//'
+>>> base64.urlsafe_b64encode(b'i\xb7\x1d\xfb\xef\xff')
+b'abcd--__'
+>>> base64.urlsafe_b64decode('abcd--__')
+b'i\xb7\x1d\xfb\xef\xff'
+```
+
+还可以自己定义64个字符的排列顺序，这样就可以自定义Base64编码，不过，通常情况下完全没有必要。
+
+Base64是一种通过查表的编码方法，不能用于加密，即使使用自定义的编码表也不行。
+
+Base64适用于小段内容的编码，比如数字证书签名、Cookie的内容等。
+
+由于`=`字符也可能出现在Base64编码中，但`=`用在URL、Cookie里面会造成歧义，所以，很多Base64编码后会把`=`去掉：
+
+```python
+# 标准Base64:
+'abcd' -> 'YWJjZA=='
+# 自动去掉=:
+'abcd' -> 'YWJjZA'
+```
+
+去掉`=`后怎么解码呢？因为Base64是把3个字节变为4个字节，所以，Base64编码的长度永远是4的倍数，因此，需要加上`=`把Base64字符串的长度变为4的倍数，就可以正常解码了。
+
+---
+
+#### 4.hashlib
+
+#### 5.hmac
+
+#### 6.itertools
+
+#### 7.urllib
+
+urllib提供的功能就是利用程序去执行各种HTTP请求。如果要模拟浏览器完成特定功能，需要把请求伪装成浏览器。伪装的方法是先监控浏览器发出的请求，再根据浏览器的请求头来伪装，`User-Agent`头就是用来标识浏览器的，更好的方案是使用requests。它是一个Python第三方库，处理URL资源特别方便。
+
